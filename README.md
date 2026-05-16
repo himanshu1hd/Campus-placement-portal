@@ -32,7 +32,7 @@ npm start
 ```
 
 ## Features
-- **Authentic Login**: Secure email/password authentication (Sample: `rahul@example.com` / `password123`).
+- **Authentic Login**: Secure email/password authentication (Sample: `love@example.com` / `password123`).
 - **Complete Backend**: Custom Express server with JSON-based file persistence.
 - **Role-based Access**: Custom dashboards for Students, TPOs, HRs, and Coordinators.
 - **Real-time Data**: State managed via a centralized API.
@@ -40,7 +40,7 @@ npm start
 ## Default Credentials
 All test accounts use the password: `password123`
 
-- **Student**: `rahul@example.com`
-- **TPO**: `anita@example.com`
-- **HR**: `priya@google.com`
-- **Coordinator**: `rajesh@example.com`
+- **Student**: `love@example.com`
+- **TPO**: `william@example.com`
+- **HR**: `sher@google.com`
+- **Coordinator**: `harry@example.com`
