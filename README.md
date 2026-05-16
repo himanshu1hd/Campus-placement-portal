@@ -1,11 +1,46 @@
-<div align="center">
+# Nexus Campus Placement Portal
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A comprehensive full-stack campus placement management system.
 
-  <h1>Built with AI Studio</h2>
+## Setup & Running
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+This project is a full-stack application using **Express** and **Vite**.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+### Prerequisites
+- Node.js (v18+)
+- npm
 
-</div>
+### Installation
+```bash
+npm install
+```
+
+### Running in Development
+```bash
+npm run dev
+```
+The application will be available at `http://localhost:3000`.
+
+### Running in Production (Build)
+To build the application for production:
+```bash
+npm run build
+```
+Then start the server:
+```bash
+npm start
+```
+
+## Features
+- **Authentic Login**: Secure email/password authentication (Sample: `rahul@example.com` / `password123`).
+- **Complete Backend**: Custom Express server with JSON-based file persistence.
+- **Role-based Access**: Custom dashboards for Students, TPOs, HRs, and Coordinators.
+- **Real-time Data**: State managed via a centralized API.
+
+## Default Credentials
+All test accounts use the password: `password123`
+
+- **Student**: `rahul@example.com`
+- **TPO**: `anita@example.com`
+- **HR**: `priya@google.com`
+- **Coordinator**: `rajesh@example.com`

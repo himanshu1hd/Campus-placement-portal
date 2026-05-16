@@ -1,0 +1,129 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "enum": ["STUDENT", "TPO", "HR", "COORDINATOR"] },
+        "department": { "type": "string" },
+        "avatar": { "type": "string" },
+        "cgpa": { "type": "number" },
+        "branch": { "type": "string" },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "projects": { "type": "array", "items": { "type": "object" } },
+        "isBlocked": { "type": "boolean" },
+        "isVerified": { "type": "boolean" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "Company": {
+      "title": "Company",
+      "description": "Company details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "logo": { "type": "string" }
+      },
+      "required": ["id", "name", "description"]
+    },
+    "JobPosting": {
+      "title": "Job Posting",
+      "description": "Job recruitment details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "companyId": { "type": "string" },
+        "companyName": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "requirements": { "type": "string" },
+        "minCgpa": { "type": "number" },
+        "branches": { "type": "array", "items": { "type": "string" } },
+        "salary": { "type": "string" },
+        "deadline": { "type": "string" },
+        "status": { "enum": ["OPEN", "CLOSED"] }
+      },
+      "required": ["id", "companyId", "companyName", "title", "status"]
+    },
+    "Application": {
+      "title": "Application",
+      "description": "Student job application",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "companyName": { "type": "string" },
+        "status": { "enum": ["APPLIED", "SCREENING", "INTERVIEW", "OFFERED", "REJECTED", "ACCEPTED", "DECLINED"] },
+        "appliedAt": { "type": "string" },
+        "currentRound": { "type": "number" }
+      },
+      "required": ["id", "jobId", "studentId", "status", "appliedAt"]
+    },
+    "Interview": {
+      "title": "Interview",
+      "description": "Scheduled interview",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicationId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "companyId": { "type": "string" },
+        "companyName": { "type": "string" },
+        "scheduledAt": { "type": "string" },
+        "location": { "type": "string" },
+        "round": { "type": "number" },
+        "status": { "enum": ["SCHEDULED", "COMPLETED", "CANCELLED"] }
+      },
+      "required": ["id", "applicationId", "studentId", "status", "scheduledAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "type": { "enum": ["JOB", "INTERVIEW", "ANNOUNCEMENT", "OFFER"] }
+      },
+      "required": ["id", "userId", "title", "message", "createdAt", "isRead"]
+    },
+    "StudentQuery": {
+      "title": "Student Query",
+      "description": "Query raised by student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "message": { "type": "string" },
+        "department": { "type": "string" },
+        "status": { "enum": ["PENDING", "RESOLVED"] },
+        "response": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "studentId", "message", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/companies/{companyId}": { "schema": "Company", "description": "Company database" },
+    "/jobs/{jobId}": { "schema": "JobPosting", "description": "Job listings" },
+    "/applications/{appId}": { "schema": "Application", "description": "Applications tracking" },
+    "/interviews/{interviewId}": { "schema": "Interview", "description": "Interviews schedule" },
+    "/notifications/{notId}": { "schema": "Notification", "description": "User notifications" },
+    "/queries/{queryId}": { "schema": "StudentQuery", "description": "Student support queries" }
+  }
+}

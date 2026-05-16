@@ -1,0 +1,131 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function getUserData() {
+      let path = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(path) ? get(path).data : null;
+    }
+
+    function isRole(role) {
+      let data = getUserData();
+      return isSignedIn() && data != null && data.role == role;
+    }
+
+    // --- Users ---
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isRole('TPO') || isRole('COORDINATOR');
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) 
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'department', 'avatar', 'cgpa', 'branch', 'skills', 'projects']);
+      allow update: if (isRole('TPO') || isRole('COORDINATOR')) 
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isBlocked', 'isVerified']);
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'role']) 
+             && data.id is string && data.name is string && data.email is string
+             && data.role in ['STUDENT', 'TPO', 'HR', 'COORDINATOR']
+             && (!('cgpa' in data) || data.cgpa is number)
+             && (!('isBlocked' in data) || data.isBlocked is bool)
+             && (!('isVerified' in data) || data.isVerified is bool);
+    }
+
+    // --- Companies ---
+    match /companies/{companyId} {
+      allow read: if isSignedIn();
+      allow create, update: if (isRole('TPO') || isRole('COORDINATOR')) && isValidCompany(request.resource.data);
+      allow delete: if isRole('TPO');
+    }
+
+    function isValidCompany(data) {
+      return data.keys().hasAll(['id', 'name', 'description'])
+             && data.id is string && data.name is string && data.description is string;
+    }
+
+    // --- Jobs ---
+    match /jobs/{jobId} {
+      allow read: if isSignedIn();
+      allow create: if (isRole('TPO') || isRole('HR')) && isValidJob(request.resource.data);
+      allow update: if (isRole('TPO') || isRole('HR')) && isValidJob(request.resource.data);
+    }
+
+    function isValidJob(data) {
+      return data.keys().hasAll(['id', 'companyId', 'companyName', 'title', 'status'])
+             && data.id is string && data.companyId is string && data.status in ['OPEN', 'CLOSED'];
+    }
+
+    // --- Applications ---
+    match /applications/{appId} {
+      allow read: if isSignedIn() && (resource.data.studentId == request.auth.uid || isRole('TPO') || isRole('HR') || isRole('COORDINATOR'));
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid && isValidApplication(request.resource.data);
+      allow update: if isSignedIn() && (
+        (request.resource.data.studentId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
+        (isRole('TPO') || isRole('HR') || isRole('COORDINATOR'))
+      ) && isValidApplication(request.resource.data);
+    }
+
+    function isValidApplication(data) {
+      return data.keys().hasAll(['id', 'jobId', 'studentId', 'status', 'appliedAt'])
+             && data.id is string && data.status in ['APPLIED', 'SCREENING', 'INTERVIEW', 'OFFERED', 'REJECTED', 'ACCEPTED', 'DECLINED'];
+    }
+
+    // --- Interviews ---
+    match /interviews/{interviewId} {
+      allow read: if isSignedIn() && (resource.data.studentId == request.auth.uid || isRole('TPO') || isRole('HR') || isRole('COORDINATOR'));
+      allow create, update: if (isRole('TPO') || isRole('HR')) && isValidInterview(request.resource.data);
+    }
+
+    function isValidInterview(data) {
+      return data.keys().hasAll(['id', 'applicationId', 'studentId', 'status', 'scheduledAt'])
+             && data.id is string && data.status in ['SCHEDULED', 'COMPLETED', 'CANCELLED'];
+    }
+
+    // --- Notifications ---
+    match /notifications/{notId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidNotification(request.resource.data);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'message', 'createdAt', 'isRead'])
+             && data.id is string && data.userId is string && data.isRead is bool;
+    }
+
+    // --- Queries ---
+    match /queries/{queryId} {
+      allow read: if isSignedIn() && (resource.data.studentId == request.auth.uid || isRole('COORDINATOR'));
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid && isValidQuery(request.resource.data);
+      allow update: if isRole('COORDINATOR') && isValidQuery(request.resource.data);
+    }
+
+    function isValidQuery(data) {
+      return data.keys().hasAll(['id', 'studentId', 'message', 'status', 'createdAt'])
+             && data.id is string && data.studentId is string && data.status in ['PENDING', 'RESOLVED'];
+    }
+  }
+}
